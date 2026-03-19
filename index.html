@@ -1,19 +1,171 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon App Basic Fit</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🏋️ Ma Séance du Jour</h1>
-        
-        <div id="workout-list"></div>
-        
+  <div class="app">
+    <div class="topbar">
+      <div>
+        <h1>Fitness Tracker</h1>
+        <div class="date" id="today-date"></div>
+      </div>
     </div>
 
-    <script src="app.js"></script>
+    <div class="tab-bar">
+      <button class="tab active" data-tab="stats" onclick="showTab('stats', this)">Stats</button>
+      <button class="tab" data-tab="programme" onclick="showTab('programme', this)">Programme IA</button>
+      <button class="tab" data-tab="seance" onclick="showTab('seance', this)">Séance</button>
+      <button class="tab" data-tab="muscles" onclick="showTab('muscles', this)">Machines</button>
+    </div>
+
+    <!-- STATS -->
+    <div id="tab-stats" class="section active">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Poids</div>
+          <div class="metric-value" id="stat-poids">—</div>
+          <div class="metric-unit">kg</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">IMC</div>
+          <div class="metric-value" id="stat-imc">—</div>
+          <div class="metric-unit">kg/m²</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Graisse</div>
+          <div class="metric-value" id="stat-graisse">—</div>
+          <div class="metric-unit">%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ajouter une mesure</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Poids (kg)</label>
+            <input type="number" id="input-poids" placeholder="ex: 80" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Taille (cm)</label>
+            <input type="number" id="input-taille" placeholder="ex: 178">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>% Graisse corporelle</label>
+            <input type="number" id="input-graisse" placeholder="ex: 18" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Tour de taille (cm)</label>
+            <input type="number" id="input-taille-tour" placeholder="ex: 82">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tour de poitrine (cm)</label>
+            <input type="number" id="input-poitrine" placeholder="ex: 95">
+          </div>
+          <div class="form-group">
+            <label>Tour de bras (cm)</label>
+            <input type="number" id="input-bras" placeholder="ex: 35">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="saveMesure()">Enregistrer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Historique</div>
+        <div id="history-list">
+          <div class="empty-state">Aucune mesure enregistrée</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRAMME IA -->
+    <div id="tab-programme" class="section">
+      <div class="card">
+        <div class="card-title">Générer un programme</div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Objectif principal</label>
+          <select id="prog-objectif">
+            <option value="prise de masse">Prise de masse</option>
+            <option value="perte de graisse">Perte de graisse / sèche</option>
+            <option value="force">Force</option>
+            <option value="endurance">Endurance musculaire</option>
+            <option value="remise en forme">Remise en forme</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Séances / semaine</label>
+            <select id="prog-seances">
+              <option value="2">2 séances</option>
+              <option value="3" selected>3 séances</option>
+              <option value="4">4 séances</option>
+              <option value="5">5 séances</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Niveau</label>
+            <select id="prog-niveau">
+              <option value="débutant">Débutant</option>
+              <option value="intermédiaire" selected>Intermédiaire</option>
+              <option value="avancé">Avancé</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label>Infos supplémentaires (blessures, préférences…)</label>
+          <textarea id="prog-notes" rows="2" placeholder="ex: douleur au genou droit, préfère les machines aux barres"></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" onclick="genererProgramme()">Générer avec IA →</button>
+        </div>
+      </div>
+      <div id="ai-result"></div>
+    </div>
+
+    <!-- SEANCE -->
+    <div id="tab-seance" class="section">
+      <div class="card">
+        <div class="card-title">Séance du jour</div>
+        <div id="seance-exercises">
+          <div class="empty-state">Génère un programme ou ajoute des exercices</div>
+        </div>
+        <div class="btn-row" style="margin-top:12px">
+          <button class="btn" onclick="addExerciceManuel()">+ Exercice</button>
+          <button class="btn primary" onclick="sauvegarderSeance()">Terminer la séance</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Séances passées</div>
+        <div id="seance-history">
+          <div class="empty-state">Aucune séance enregistrée</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINES -->
+    <div id="tab-muscles" class="section">
+      <div class="card">
+        <div class="card-title">Exercices par groupe musculaire</div>
+        <div class="muscle-grid" id="muscle-grid"></div>
+        <div id="machine-list"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
